@@ -148,15 +148,59 @@ Video тут: https://www.youtube.com/watch?v=uPinwWoF1As
 
 ![](./pictures/06.jpg)
 
-   - Room-146 отправляет MC на все порты, в таблице соседей Floor14 появляется link-local адрес Reception-B
+   - Room-146 отправляет на все порты, так как его таблица - пуста. В таблице соседей Floor14 появляется link-local адрес Reception-B
 ![](./pictures/07.jpg)
-   - Floor14 отвечает на NDP MC, так как в получаетелях его icmpv6, также в его таблице соседей появляется MAC linc-local адреса Reception-B
+   - Floor14 отвечает на NDP, так как в DST icmpv6 - его адрес FE80::2, также в его таблице соседей появляются IPv6 и MAC linc-local адреса Reception-B
 ![](./pictures/08.jpg)
-   - Room-146 получает ND от Floor-14
+   - Room-146 получает ND от Floor-14 и так как его таблица MAC - заполнена, отдает его именно в Gi1/0/2
+![](./pictures/09.jpg)
+   - reception-B получает NDP-ответ и теперь знает на какой MAC отправлять кадр с вложенным ICMPv6
+   - Кадр приходит на Room-146, значения MAC-DST в таблице коммутации, кадр - UC, пересылаем кадр на порт Gi1/0/24
+   - Кадр приходит на Floor-14 и
+     - тот видит что кадр пришел на его MAC
+     - в подсеть, которая есть у него в таблице маршрутизации за IF Gi0/0. 
+     - IPv6 DST - Unicast, но такого вдреса нет в таблице соседей, 
+     - поэтому снова запускается NDP: Замораживаем ICMPv6-req и отправляем Neighbour Solicitation, занеся в таблицу соседей ICMPv6 Manager-A, без MAC
 
-<details>
-  <summary>пример</summary> 
-<pre>
-AccSwitch(config)#ip arp inspection vlan 200
-</pre>
-</details>    
+![](./pictures/09.jpg)   
+
+   - Что происходит на Room-145 на мне посмотреть, но пока таблицы соседей и коммутации в Room-146 не меняются, так как пока все процедуры происходят на Room-145
+   - Приходит ответ NDP от Manager-A: 
+     - MAC DST соответствует MAC Gi0/0, развертываем дальше
+     - IPv6 DST соответствует IPv6 Gi0/0, развертываем дальше
+     - Заносим в таблицу соседей MAC Manager-A, который нам ответил на этот NDP
+     - Отправляем ICMPv6 по-назначению, на Manager-A
+
+![](./pictures/11.jpg)  
+
+   - Manager-A получает ICMPv6
+     - MAC - его, развертываем дальше
+     - IPv6 - его, развертываем дальше 
+     - Внутри пакета ICMPv6-echo-req, надо отвечать
+     - DST IPv6 - в другой подсети и не BC, а также нет в кэше
+     - Есть DefGW, в пакет подставляем его IP, 
+     - для кадра - не хватает MAC DST, надо опять запускать NDP NS, чтобы выяснить MAC для ICMPv6 Gi0/0
+     -  next-hop IP address is multicast address. The ND Process sets the frame's destination MAC address to a multicast MAC address.
+   - Кадр пришел на Room-145
+     - SRC MAC - известен
+     - DST MAC - MC, рассылаем на все порты
+   - Кадр пришел на Floor-14
+     - MAC - BC, развертываем дальше 
+     - IPv6 - MC, лезем внуть
+     - Пакет - ICMPv6, NDP: NS target IPv6 соответствует IPv6 Gi0/0
+     - Обюновляем таблицу соседей: заносим в нее Link-local ICMPv6/MAC Manager-A
+     - Готовим NDP- ответ
+
+![](./pictures/12.jpg)  
+
+   - После того как Manager-A уточнил MAC Floor-14, он подготовил кадр с ответом ICMPv6-echo-reply для Reception-B и отправил его на Gi0/0 Floor14
+   - Floor-14 получил ICMPv6 Echo-reply:
+     - MAC совпадает с MAC Gi0/0
+     - IPv6 DST находится в другом сегменте, на который есть маршрут, и который directly-connected
+     - IPv6 DST - UC, но в таблице соседей его нет, надо опять запускать NDP NS, на предмет выяснения MAC-адреса
+
+![](./pictures/13.jpg)  
+
+После как отработает NDP - таблица соседей на Floor14 будет заполнена Link-local и ICMPv6 учатсников обмена и дальнейши обмен пойдет без NDP
+
+И вот теперь становится понятно откуда взялась эта вторая волна NDP, при обратном движении ICMPv6-echo-reply
