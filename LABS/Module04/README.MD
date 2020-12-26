@@ -86,9 +86,9 @@ https://admin-gu.ru/network/tsvetovaya-raspinovka-kontsov-patchkordov-dlya-obzhi
 
 
 ## Лабораторка 4.6.5
-![4.6.5-packet-tracer---connect-a-wired-and-wireless-lan.pdf](./labs/4.6.5-packet-tracer---connect-a-wired-and-wireless-lan.pdf)
+[4.6.5-packet-tracer---connect-a-wired-and-wireless-lan.pdf](./labs/4.6.5-packet-tracer---connect-a-wired-and-wireless-lan.pdf)
 
-![4.6.5-packet-tracer---connect-a-wired-and-wireless-lan.pka](./labs/4.6.5-packet-tracer---connect-a-wired-and-wireless-lan.pka)
+[4.6.5-packet-tracer---connect-a-wired-and-wireless-lan.pka](./labs/4.6.5-packet-tracer---connect-a-wired-and-wireless-lan.pka)
 
 
 ![](./pictures/3.jpg)

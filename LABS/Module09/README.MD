@@ -116,22 +116,47 @@ ND еще называют NDP.  2 режима:
    - neighbor advertisemant
    
 Протокол ND выполняет: разрешение имен, обнаружение R, перенаправление служб. Чтобы все это работало был написан протокол ICMPv6, котором реализовали 5 сервисов:
-   - Neigh Solicitation messages. Как и с ARP, при разрешении IP в MAC задействуется кэш ПК, но затем вместо ARP отправляется NS сообщение: IPv6 - пакет инкапсулируется в Ethernet-кадр 
-   - Neigh Advertisement messages
 
+<details>
+  <summary>1: Neigh Solicitation messages.</summary> 
+<pre>
+Как и с ARP, при разрешении IP в MAC задействуется кэш ПК, но затем вместо ARP отправляется NS сообщение: IPv6 - пакет инкапсулируется в Ethernet-кадр
+</pre>
+</details> 
+ 
+<details>
+  <summary>2: Neigh Advertisement messages</summary> 
+<pre>
 Эти первые 2 (NS и NA) - используются для взаимодействия при разрешении имен (аналог ARP). Хостами могут быть как ПК, так и R. BC в рассылках Ethernet уже нет, есть MC (а обратно - unicast), а R такой мультикаст не форвардит, так как он пришел по link-local scope
+</pre>
+</details>    
 
 ![](./pictures/04.jpg)
 
-   - Router Solicitation messages
-   - Router Advertisement messages
-
+<details>
+  <summary>3: Router Solicitation messages</summary> 
+<pre>
 Следующая пара (RS и RA) - используется когда хосту необходимо обменяться/найти R в сети, например в случае получения IPv6 адреса в режиме SLAAC (StateLess Address AutoConfiguration)   
+</pre>
+</details>  
 
-   - Redirect messages - используется выбора лучшего next-hop'a 
+<details>
+  <summary>4: Router Advertisement messages</summary> 
+<pre>
+Следующая пара (RS и RA) - используется когда хосту необходимо обменяться/найти R в сети, например в случае получения IPv6 адреса в режиме SLAAC (StateLess Address AutoConfiguration)   
+</pre>
+</details>  
+ 
+<details>
+  <summary>5: Redirect messages</summary> 
+<pre>
+используется выбора лучшего next-hop'a
+</pre>
+</details>  
 
 ## Лабораторка
 ![](./pictures/05.jpg)
+
 Задачи:
    - Ознакомиться со стеком IPv6
    - Изучить формат, заголовки кадра Ethernet в условиях IPv6
