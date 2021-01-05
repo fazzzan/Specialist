@@ -256,7 +256,7 @@ Table 1 uses regular subnetting to accommodate the network shown. Table 2 uses V
 # 11.9.2 Назначение адресов устройствам
    - ___End user clients___ - DHCP/DHCPv6/SLAAC; при изменении адресного пространства - необходимо менять пулы DHCP
    - ___Servers and peripherals___ - Статика
-   - ___Servers that are accessible from the internet ___ - либо безы IPv4, либо проброс портов за NAT, либо VPN до них
+   - ___Servers that are accessible from the internet___ - либо белые IPv4, либо проброс портов за NAT, либо VPN до них
    - ___Intermediary devices___ - Статика - те железки, которые должны, мать их, иметь ip для мониторинга, безопасности либо управляемости
    - ___Gateway___ - тут сам Б...г велел использовать статику. Чаще всего либо первый, либо последний ip  из диапазона
 
