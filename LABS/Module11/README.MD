@@ -297,3 +297,20 @@ Table 1 uses regular subnetting to accommodate the network shown. Table 2 uses V
    - конфиг сохранен и записан в Startup
 
 Выполнение 100%
+
+
+## Лабораторка 2
+Задание: дана подсеть 10.1.1.0/24 - найти ее было не просто - оказалось что она написана мелкими буквами на схеме сети
+
+Все как обычно: рассчитать схему, настроить ip, прописать ip на SW, хостах, проверить связность
+
+по моим прикидкам, схема получилсь такая:
+
+![](./pictures/24.jpg)   
+
+Заполненная pdf-ка тут: [11.10.1-packet-tracer---design-and-implement-a-vlsm-addressing-scheme.pdf](./labs/11.10.1-packet-tracer---design-and-implement-a-vlsm-addressing-scheme.pdf)
+
+
+[11.10.1-packet-tracer---design-and-implement-a-vlsm-addressing-scheme.pka](./labs/11.10.1-packet-tracer---design-and-implement-a-vlsm-addressing-scheme.pka)
+
+Самое тяжелое оказалось - найти нужную подсеть )))
