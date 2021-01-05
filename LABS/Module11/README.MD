@@ -188,74 +188,112 @@ IPv4 адрес - 32 bits, часть - биты сети, чатсь - биты
 
 Table 1 uses regular subnetting to accommodate the network shown. Table 2 uses VLSM to further subnet the network. Calculate 50 users per subnet.
    - Задание 1: Click the new Subnet Mask (decimal)
+
  |       1       |   2       |        3        |       4        |        5      |
  |-------------- |:---------:|:---------------:|:--------------:|:-------------:|
- | 192.168.5.0-  |   /26     | 255.255.255.192 | 192.168.5.192- | 192.168.5.64- |
- | 192.168.5.63  |           |                 | 192.168.5.255  | 192.168.5.127 |
- |-------------- |:---------:|-----------------|----------------|---------------|
+ | 192.168.5.0- 192.168.5.63  |   /26     | ```255.255.255.192``` | 192.168.5.192 - 192.168.5.255 | 192.168.5.64-192.168.5.127 |
+ 
+ 
+   - Задание 2: Click the first Prefix notation
+
+ |       1       |   2       |        3        |       4        |        5      |
+ |-------------- |:---------:|:---------------:|:--------------:|:-------------:|
+ | 192.168.5.0- 192.168.5.63  |   ```/26```     | 255.255.255.192 | 192.168.5.192 - 192.168.5.255 | 192.168.5.64-192.168.5.127 |
+ 
+   - Задание 3: Click the first full subnet range
+
+ |       1       |   2       |        3        |       4        |        5      |
+ |-------------- |:---------:|:---------------:|:--------------:|:-------------:|
+ | ```192.168.5.0- 192.168.5.63```  |   /26     | 255.255.255.192 | 192.168.5.192 - 192.168.5.255 | 192.168.5.64-192.168.5.127 |
+
+   - Задание 4: Click the second full subnet range
+
+ |       1       |   2       |        3        |       4        |        5      |
+ |-------------- |:---------:|:---------------:|:--------------:|:-------------:|
+ | 192.168.5.0- 192.168.5.63  |   /26     | 255.255.255.192 | 192.168.5.192 - 192.168.5.255 | ```192.168.5.64-192.168.5.127``` |
+
+   - Задание 5: Click the last full subnet range
+
+ |       1       |   2       |        3        |       4        |        5      |
+ |-------------- |:---------:|:---------------:|:--------------:|:-------------:|
+ | 192.168.5.0- 192.168.5.63  |   /26     | 255.255.255.192 | ```192.168.5.192 - 192.168.5.255``` | 192.168.5.64-192.168.5.127 |
+
+## Подзадача
+192.168.5.0/24 | Table 2 - VLSM Calculation: Use the second full subnet range from Table 1 and VLSM to calculate for 20 users per subnet.
+
+   - Задание 1: Click the second full subnet range (/26) from Table 1
+
+ |       1       |   2       |        3        |       4        |        5      |
+ |-------------- |:---------:|:---------------:|:--------------:|:-------------:|
+ | 192.168.5.96- 192.168.5.127  |   /27     | ```192.168.5.96- 192.168.5.127``` | 255.255.255.224 | 192.168.5.64-192.168.5.95 |
+
+   - Задание 2: Click the new VLSM Subnet Mask (decimal)
+
+ |       1       |   2       |        3        |       4        |        5      |
+ |-------------- |:---------:|:---------------:|:--------------:|:-------------:|
+ | 192.168.5.96- 192.168.5.127  |   /27     | 192.168.5.96- 192.168.5.127 | ```255.255.255.224``` | 192.168.5.64-192.168.5.95 |
+
+   - Задание 3: Click the VLSM Prefix notation
+
+ |       1       |   2       |        3        |       4        |        5      |
+ |-------------- |:---------:|:---------------:|:--------------:|:-------------:|
+ | 192.168.5.96- 192.168.5.127  |   ```/27```     | 192.168.5.96- 192.168.5.127 | 255.255.255.224 | 192.168.5.64-192.168.5.95 |
+
+   - Задание 4: Click the first full VLSM subnet range
+
+ |       1       |   2       |        3        |       4        |        5      |
+ |-------------- |:---------:|:---------------:|:--------------:|:-------------:|
+ | 192.168.5.96- 192.168.5.127  |   /27     | 192.168.5.96- 192.168.5.127 | 255.255.255.224 | ```192.168.5.64-192.168.5.95``` |
+
+   - Задание 5: Click the last full VLSM subnet range
+
+ |       1       |   2       |        3        |       4        |        5      |
+ |-------------- |:---------:|:---------------:|:--------------:|:-------------:|
+ | ```192.168.5.96- 192.168.5.127```  |   /27     | 192.168.5.96- 192.168.5.127 | 255.255.255.224 | 192.168.5.64-192.168.5.95 |
 
 
 
+# 11.9.2 Назначение адресов устройствам
+   - ___End user clients___ - DHCP/DHCPv6/SLAAC; при изменении адресного пространства - необходимо менять пулы DHCP
+   - ___Servers and peripherals___ - Статика
+   - ___Servers that are accessible from the internet ___ - либо безы IPv4, либо проброс портов за NAT, либо VPN до них
+   - ___Intermediary devices___ - Статика - те железки, которые должны, мать их, иметь ip для мониторинга, безопасности либо управляемости
+   - ___Gateway___ - тут сам Б...г велел использовать статику. Чаще всего либо первый, либо последний ip  из диапазона
+
+## Лабораторка
+Задание: дана подсеть 10.11.48.0/24
+   - Part 1: Examine the Network Requirements, Определить количество подсетей, исходя из условий, выбрать маску:
+     * ASW-1 LAN will require 14 host IP addresses
+     * ASW-2 LAN will require 30 host IP addresses
+     * ASW-3 LAN will require 6 host IP addresses
+     * ASW-4 LAN will require 60 host IP addresses
+   - Part 2: Design the VLSM Addressing Scheme, 
+     - задокументируйте её
+       * Use the first subnet to accommodate the largest LAN.
+       * Use the second subnet to accommodate the second largest LAN.
+       * Use the third subnet to accommodate the third largest LAN.
+       * Use the fourth subnet to accommodate the fourth largest LAN.
+       * Use the fifth subnet to accommodate the connection between Building1 and Building2.
+     - Назначте ip:
+       * Assign the first usable IP addresses to Building1 for the two LAN links and the WAN link.
+       * Assign the first usable IP addresses to Building2 for the two LAN links. Assign the last usable IP address for the WAN link.
+       * Assign the second usable IP addresses to the switches.
+       * Assign the last usable IP addresses to the hosts.       
+   - Part 3: Assign IP Addresses to Devices and Verify Connectivity
+
+по моим прикидкам, схема получилсь такая:
+
+![](./pictures/23.jpg)   
+
+Заполненная pdf-ка тут: [11.9.3-packet-tracer---vlsm-design-and-implementation-practice.pdf](./labs/11.9.3-packet-tracer---vlsm-design-and-implementation-practice.pdf)
 
 
+[11.9.3-packet-tracer---vlsm-design-and-implementation-practice.pka](./labs/11.9.3-packet-tracer---vlsm-design-and-implementation-practice.pka)
 
 
-Click the first Prefix notation
+В процессе настроек были рассчитаны подсети и на доступных узлах настроены:
+   - ip-адреса, 
+   - безопасность (secret, line con0, line vty 0 14, service pass-encr, banner motd)
+   - конфиг сохранен и записан в Startup
 
-192.168.5.0-
-192.168.5.63
-
-/26
-
-255.255.255.192
-
-192.168.5.192-
-192.168.5.255
-
-192.168.5.64-
-192.168.5.127
-
-Click the first full subnet range
-
-192.168.5.0-
-192.168.5.63
-
-/26
-
-255.255.255.192
-
-192.168.5.192-
-192.168.5.255
-
-192.168.5.64-
-192.168.5.127
-
-Click the second full subnet range
-
-192.168.5.0-
-192.168.5.63
-
-/26
-
-255.255.255.192
-
-192.168.5.192-
-192.168.5.255
-
-192.168.5.64-
-192.168.5.127
-
-Click the last full subnet range
-
-192.168.5.0-
-192.168.5.63
-
-/26
-
-255.255.255.192
-
-192.168.5.192-
-192.168.5.255
-
-192.168.5.64-
-192.168.5.127
+Выполнение 100%
