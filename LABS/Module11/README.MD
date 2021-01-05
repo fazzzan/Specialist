@@ -48,7 +48,7 @@ Network and Host Portions - необходимы, чтобы понять как
 IPv4 адрес - 32 bits, часть - биты сети, чатсь - биты хоста. Точки - разделяют октеты. Т.О. в адресе IPv4 - 4 октета
 ![](./pictures/4.jpg)
 
-Чтобы понять какая частс хоста, какая сети - используется маска:
+Чтобы понять какая часть хоста, какая сети - используется маска:
 
 ![](./pictures/05.jpg)
 
@@ -139,11 +139,16 @@ IPv4 адрес - 32 bits, часть - биты сети, чатсь - биты
    - [лабы VLSM - маски, разбиение на подсети](./labs/2-VLSM_WB_Student_Ed-v2_0.pdf)
    - [лабы VLSM - маски, разбиение на подсети - отвыеты](./labs/2-VLSM_WB_InstructorsEd-v2_0.pdf)
 
+Запомнить, что маска нужна чтобы выделить подсеть из адреса:
+
+![](./pictures/26.jpg)   
 
 ## Лабка 11.6.6
 Деление на подсеточки
    - количество подсетей 2^n
    - количесов хостов (2^n) -2 
+
+![](./pictures/25.jpg)   
 
 [Вспомогательный_материал](./labs/11.6.6.address.txt)
 
@@ -314,3 +319,4 @@ Table 1 uses regular subnetting to accommodate the network shown. Table 2 uses V
 [11.10.1-packet-tracer---design-and-implement-a-vlsm-addressing-scheme.pka](./labs/11.10.1-packet-tracer---design-and-implement-a-vlsm-addressing-scheme.pka)
 
 Самое тяжелое оказалось - найти нужную подсеть )))
+
