@@ -145,7 +145,7 @@ R1 получил запрос и в итоге понял что это DHCP-Di
 5. The routing table finds a routing entry to the destination IP address.
 6. The destination network is directly connected. The device sets destination as the next-hop.
 
-При переупаковке PDU7, R1  добавляет информацию о RelayAgent Address? и как было сказано ранее, на основании этого ip, DHCP жолжен выбрать pool, в котором будет нарезан ip-адрес.
+При переупаковке PDU7, R1  добавляет информацию о RelayAgent Address, и, как было сказано ранее, на основании этого ip, DHCP жолжен выбрать pool, в котором будет нарезан ip-адрес.
 
 ![](./pictures/11.jpg)
 
@@ -155,17 +155,19 @@ R1 получил запрос и в итоге понял что это DHCP-Di
 - 3. The DHCP server does not have an existing binding to this host. It looks up DHCP pools for a new IP address.
 - 4. The DHCP server finds the next available IP address in the pool.
 
-Что и требовалось доказать: ip-helper меняет пакет и DHCP отвечает на него как на UC? 
+Что и требовалось доказать: ip-helper меняет пакет и DHCP отвечает на него как на UC. 
 
 Отправляемый обратно пакет - UC, который на R1 опять будет преобразован и разослан броадкастом обратно (L3, L2) на свич, который опять разошлет ответ по всем портам
 
 ![](./pictures/08.jpg)
 
-Хост понимает по MAC, что к нему пришел BC кадр, распаковывает его, пакет - тоже BC и он в свою очередь тоже деинкапсулируется в сегмент с SRC 67, DST 68, после чего хост понимает что пришел DHCP_Offer и в ответ на него отправляет DHCP_Request (doRa)
+Хост понимает по MAC, что к нему пришел BC кадр, распаковывает его, пакет - тоже BC и он в свою очередь тоже деинкапсулируется в сегмент с портами SRC 67, DST 68, после чего хост понимает что пришел DHCP_Offer и в ответ на него отправляет BC DHCP_Request (doRa). BC - потому, что DHCP_Offer мог прийти от нескольких DHCP и надо оповестить всех о выбранном ip/dhcp
 
 ![](./pictures/09.jpg)
 
 При этом этот Request L3 src все to tyt использует предложенный ip и все также отправляется BC и опять повторяется история c helper-ом, когда в PDU пихается ip интерфейса, на котором прописан helper параметром relay Agent, но уже также есть информация о том адресе, который выдал DHCP
+
+![](./pictures/16.jpg)
 
 ![](./pictures/11.jpg)
 
@@ -248,3 +250,7 @@ ___Лаб 7.4.2___
 ![](./pictures/15.jpg)
 
 оба PC пингуются, задача решена
+
+![](./pictures/17.jpg)
+
+- [pkt](labs/7.4.2.lab.pkt)
