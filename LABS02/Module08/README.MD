@@ -28,7 +28,7 @@ Ack/Reply - подтверждает, если нет дубляжа
 # NETACAD #
 # DHCP v6 #
 методы DCHP для ipv6:
-- SLAAC [stateless address autoconfiguration] - (аналого APIPA для Global UC addresses)
+- SLAAC [stateless address autoconfiguration] - (аналог APIPA для Global UC addresses)
 - DHCPv6
 ## Ipv6 GUA assignment ##
 SLAAC  или DHCPv6 - все равно на IF будет GUA и LLA. Пример статического GUA

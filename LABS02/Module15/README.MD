@@ -1,3 +1,39 @@
+# Specialist 20210123
+static маршруты есть и в ipv6 и ipv6. Критерий выбора ststic маршрута: если задолбался копаться со статикой - переходи на динамику, если нет - оставайся на статике
+Типа static
+- standard - самый обычный, на указание сегмента и next-hop или out IF
+- default - добавляется символ ___*___ в выводе команды ___show ip route___
+- Плавающие - для случая, когда необходимо автоматически перестроить таблицу маршрутизации, для этого зададим AD хуже, чем у предпочтительного маршрута, тогда процесс маршрутизации "уйдет в тень". Если упадет основной IF, то резервный маршрут всплывет. Способ не сработает, до тех пор пока не упадет физика, проблемы с логикой вышестоящего маршрутизатора тоже не отловятся. Поэтому плавающие маршруты используются обязательно с IP SLA  в реальном мире. У Cisco есть EEM embedded event manager - скрипты, преподаватель говорит что с 12 IOS...
+- суммарные
+
+![](./pictures/11.jpg)
+
+Next-hop опции:
+- next-hop route [ip]
+- Directly connected static route [Out IF] (не применять в Ethernet сетях) - будет не просто падение производительности, а может просто все лечь
+- fully specified static route - [ip] + [out IF]
+
+Лаба в классе
+![](./pictures/13.jpg)
+Настроили ipv4, затем провели эксперимент: удалили на R3 все маршруты, и настроили маршрут через неправильный next-hop
+```
+10.1.1.0 255.255.255.0 10.1.12.5
+```
+ip-связность сохранилась, так как у нас R2-R3 - SERIAL, ppp подключение =>  R1 не заморачивался с DST отправляемого пакета, а просто рекурсивно вычислели следующий  next-hop и передал пакет на R2, разбирайся сам. А R2 знает что это за сеть
+
+![](./pictures/12.jpg)
+
+для включения ipv6 маршрутизации ___ipv6 unicast-routing___
+При настройке ipv6 маршрутов, можно указывать:
+- GUA
+- LLA, но его надо указывать с ___out IF___
+
+![](./pictures/14.jpg)
+
+Доступ к http  по ipv6
+
+![](./pictures/15.jpg)
+
 # NETACAD
 
 ## Типы Static Route
@@ -16,7 +52,7 @@
 ```
 Router(config)# ip route network-address subnet-mask { ip-address | exit-if [ip-address]} [distance]
 ```
-- ip-address - адрес Next-hop? при этом может возникнуть рекурсивный запрос, Next-hop через Next-hop через Next-hop, что приводит к задержкам выплевывания пакета
+- ip-address - адрес Next-hop, при этом может возникнуть рекурсивный запрос, Next-hop через Next-hop через Next-hop, что приводит к задержкам выплевывания пакета
 - exit-IF - через что выплевывать пакет, при этом автоматически создается ___directly-connected___ static маршрут. Используется в p-t-p подключениях
 - exit-if ip-address - для fully specified static route
 - distance - AD; 1...255; хитрость: для задания плавающего/floating маршрута задаем AD больше чем у dynamic-вычисленного маршрута
@@ -26,11 +62,7 @@ Router(config)# ipv6 route ipv6-prefix/prefix-length {ipv6-address | exit-intf [
 ```
 - ipv6-prefix - идентификатор IPv6 сети назначения.
 - /prefix-length - длина prefix'а сети назначения.
-- ipv6-address - next-hop router IPv6 address. 
-
-Че за хрень?? не понял фразы
-___Typically used with broadcast networks (i.e., Ethernet). Could create a recursive static route where the router performs an additional lookup to find the exit interface.___
-
+- ipv6-address - next-hop router IPv6 address. Обычно используется в BC среде Ethernet. Может появиться екурсивный запрос, Next-hop через Next-hop через Next-hop, что приводит к задержкам выплевывания пакета
 - exit-intf - exit IF куда будут выплевываться пакеты. Создает ___directly connected static route___. Используется для point-to-point.
 - exit-intf ipv6-address - для fully specified static route.
 - distance - AD; 1...255; хитрость: для задания плавающего/floating маршрута задаем AD больше чем у dynamic-вычисленного маршрута
@@ -284,7 +316,129 @@ ___Лаба - 15.6.1___
 
 ![](./pictures/08.jpg)
 
+Лаббораторка на понимание отличий в статических маршрутах:
+- Directly connected 
+- floating static default (AD)
+- IPv6 static default
+- IPv6 floating static default (AD)
+- next-hop static route/floating next-hop static route (AD)
+- Ipv6 next-hop static/floating next-hop static (AD)
+- host route/floating host route
+
+После выполнения - замечаний не возникло: узлы пинговались, результат - 100%
+
 ___Лаба - 15.6.2___
 
 - [pdf](labs/15.6.2-lab---configure-ipv4-and-ipv6-static-and-default-routes.pdf)
-- [...](labs/...)
+- [pkt](labs/15.6.2-lab---configure-ipv4-and-ipv6-static-and-default-routes.pkt)
+
+![](./pictures/16.jpg)
+
+Задачи:
+- Part 1: Построить сеть, произвести базовые настроки безопасности 
+- Part 2: Настроить IP and IPv6 адреса R1 and R2 
+- Part 3: Настроить и проверить статические и дефолтные маршруты IPv4 R1 и R2 
+- Part 4: Настроить и проверить статические и дефолтные маршруты IPv6 R1 и R2 
+
+Конфиги оборудования, согасно картинки:
+- [R1](labs/R1.cfg)
+- [R2](labs/R2.cfg)
+- [S1](labs/S1.cfg)
+- [S2](labs/S2.cfg)
+
+PartI, II- выполнил без труда, хотя сначала я допустил ошибки. Part III - сначала вызвал недоумение, так как на первый взгляд показалось что все настроено как надо, пока я не заметил, что R абсолютно ничего не знают про Lo друг друга.
+
+1. R1, configure a static route to R2’s Loopback1 network, using R2’s G0/0/1
+```
+ip route 10.2.0.0 255.255.255.0 192.168.1.2
+```
+2. R1, configure a static default route via R2’s G0/0/0 address
+```
+ip route 0.0.0.0 0.0.0.0 172.16.1.2
+```
+3. R1, configure a floating static default route via R2’s G0/0/1 address.
+```
+ip route 0.0.0.0 0.0.0.0 192.168.1.2 80
+```
+4. R2, configure a static default route via R1’s G0/0/0 address 
+```
+ip route 0.0.0.0 0.0.0.0 172.16.1.1
+```
+Видно что маршруты до Lo1 и Lo2 - отличаются, так как маршрут до Lo1 - конкретно задан, а до Lo2 - на основании  default route
+
+```
+R1#traceroute 10.2.0.1
+...
+  1   192.168.1.2     0 msec    2 msec    0 msec    
+
+R1#traceroute 209.165.200.193
+...
+  1   172.16.1.2      0 msec    0 msec    0 msec 
+
+
+R1#d sho ip route
+...
+Gateway of last resort is 172.16.1.2 to network 0.0.0.0
+...
+S       10.2.0.0/24 [1/0] via 192.168.1.2
+...
+S*   0.0.0.0/0 [1/0] via 172.16.1.2
+```
+После того как на R1 погасили Gi0/0/0, плавающий маршрут с AD 80 подтянулся в таблицу маршрутизации и оба маршрута до Lo1, Lo2 - стали совпадать
+```
+R1(config)#do sho ip route
+...
+S       10.2.0.0/24 [1/0] via 192.168.1.2
+...
+S*   0.0.0.0/0 [80/0] via 192.168.1.2
+
+R1#traceroute 209.165.200.193
+...
+  1   192.168.1.2     0 msec    0 msec    3 msec    
+
+R1#traceroute 10.2.0.1
+...
+  1   192.168.1.2     1 msec    0 msec    2 msec   
+```
+
+Part iV
+1. R2, configure a static route to R1’s Loopback1 network, using R1’s G0/0/1 address
+```
+ipv6 route 2001:db8:acad:10::0/64 2001:db8:acad:1::1 
+```
+
+2. R2, configure a static default route via R1’s G0/0/0 address
+```
+ipv6 route ::0/0 2001:db8:acad:2::1
+```
+3. R2, configure a floating static default route via R1’s G0/0/1 address, AD80
+
+```
+ipv6 route ::0/0 2001:db8:acad:1::1 80
+```
+4. R1, configure a static default route via R1’s G0/0/0  address
+```
+ipv6 route ::0/0 2001:db8:acad:2::2
+```
+
+Маршрутизация с R2 -> Lo1, Lo2 R1:
+```
+R2#traceroute 2001:db8:acad:10::1
+...
+  1   2001:DB8:ACAD:10::1 6 msec    2 msec    4 msec    
+
+R2#traceroute 2001:db8:acad:209::1
+...
+  1   2001:DB8:ACAD:2::1 14 msec   0 msec    1 msec    
+```
+после того как уронили R10/0/0? tracert следующий:
+```
+R2#traceroute 2001:db8:acad:10::1
+...
+  1   2001:DB8:ACAD:1::1 0 msec    3 msec    3 msec    
+
+R2#traceroute 2001:db8:acad:209::1
+...
+  1   2001:DB8:ACAD:1::1 0 msec    0 msec    2 msec    
+```
+Причем только при анализе траейсерт я увидел, что неправильно настроить R2 Lo2, что и исправил.
