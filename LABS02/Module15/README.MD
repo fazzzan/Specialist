@@ -57,6 +57,8 @@ Router(config)# ip route network-address subnet-mask { ip-address | exit-if [ip-
 - exit-if ip-address - для fully specified static route
 - distance - AD; 1...255; хитрость: для задания плавающего/floating маршрута задаем AD больше чем у dynamic-вычисленного маршрута
 
+![](./pictures/18.jpg)
+
 ```
 Router(config)# ipv6 route ipv6-prefix/prefix-length {ipv6-address | exit-intf [ipv6-address]} [distance]
 ```
