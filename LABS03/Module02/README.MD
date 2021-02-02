@@ -91,11 +91,18 @@ ip ospf netwo point-to-point
 - Configure Passive Interfaces.
 - Verify OSPF configuration.
 
+- [pdf](labs/2.2.13-packet-tracer---point-to-point-single-area-ospfv2-configuration.pdf)
+- [pka](2.2.13-packet-tracer---point-to-point-single-area-ospfv2-configuration.pka)
+
 Лаба выполнена, но удовольствие не получено, так как, так как не разобравшись, я подумал что в PT не видно DR/BDR. Пересобрал в GNS3 и понял что соединение PPP, поэтому DR/BDR - не будет: это PPP, детка
 
 ![](./pictures/07.jpg)
 
+[gns3](labs/2.2.13_exp.gns3project)
+
 ![](./pictures/09.jpg)
+
+
 
 ___По итогу прочтения - я не совсем понял, зачем так много времени посвящено point-to-point сетям___
 
