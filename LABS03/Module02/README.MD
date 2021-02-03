@@ -126,3 +126,86 @@ show ip ospf interface <Gi0/0/0>
 - ___2-WAY/DROTHER___ - non-DR и non-BDR (DROTHER) роутеры также имеют отношения соседства между собой. Обмен ТОЛЬКО Hello packets.
 
 Смотрим на состояние: нормальное состояние - FULL. Если R завис в каком-то другом состоянии (за исключением 2-WAY, как показано выше), то у него есть проблемы формирования соседства (разные таймеры, MTU и т.д.)
+
+## 2.3.6 Default DR/BDR Election Process
+DR/BDR выборы начинаются сразу, как только на OSPF-роутере включится IF. Выборы занимают несколько секунд и поэтому если кто-то из роутеров проспал этот момент, он уже никак не сможет повлиять на результат: новые R не вмешиваются в работу сети.  Критерии выбора DR/BDR - следующие:
+1.  На основании приоритета (___см. описание hello-пакета, Router Priority - для выбора DR/BDR - 1 default, вручную задаем 0 - 255 (чем больше, тем лучше)___), роутер сам себе выбирает DR. Роутер со вторым по величине приоритетом становится BDR. Приоритет задается на IF, если его значение задать в 0, то IF роутера никогда не будет назначен DR/BDR (типа открестился от почетной обязанности). Приоритет по-умолчанию для multiaccess broadcast interfaces ___1___. Так как чаще всего никому нафиг эти приоритеты менять не надо, они так и остаются в 1 и поэтому придумали еще один спосб назначения.
+2. При обмене Hello-пакетами, роутеры получают информацию о RID других участников обмена. Поскольку, как я написал, приоритеты на IF никто не меняет, роутеры начинают меряться RID-ами, и у кого больше - тот DR. Второй по величине RID - BDR.
+
+Ну и тут уже надо понимать, что по-хорошему новым и центровым роутерам надо назначать максимальный RID, не забывая сбрасывать ```clear ip ospf process```. А если забыли, то RID возьмется автоматически:
+   - максимальный lo адрес
+   - максимальный из активных сетевой IPv4 IF.
+
+Вышесказанное, относительно устоявшегося положения вещей с DR/BDR относится и ко вновь включенному R: опаздавший сидит и ждет пока не освободится место самого буйного в сумасшедшем доме.
+
+## 2.3.8 ip OSPF priority
+Эта настройка нужна чтобы выиграть выборы OSPF. Таким образом R прекрасно может сочетать в себе DR в одной AREA и быть DROTHER в другой. Если поставить 0 - значит R никогда не станет DR/BDR
+```
+R1(config)# interface GigabitEthernet 0/0/0 
+R1(config-if)# ip ospf priority 255 
+R1(config-if)# end 
+```
+
+В результате, R1 станет DR
+
+![](./pictures/11.jpg)
+
+
+___Лабка 2.3.11___
+
+- [pdf](labs/2.3.11-packet-tracer---determine-the-dr-and-bdr.pdf)
+- [pka](labs/2.3.11-packet-tracer---determine-the-dr-and-bdr.pka)
+
+Задачи:
+![](./pictures/12.jpg)
+- Part 1: Examine DR and BDR Changing Roles
+- Part 2: Modify OSPF Priority and Force Elections
+
+просмотреть какая роль в настоящий момент у R можно командами
+```
+sho ip ospf int gi 0/0/0
+...
+shi ip ospf nei
+```
+
+![](./pictures/13.jpg)
+
+Поперезагружал роутеры, в итоге RC - стал DROther, а DR - RB, BDR - RA, затем сделал ```debug ip ospf adj``` и отключил Gi0/0/0 на RA, который к тому времени стал DR
+
+![](./pictures/15.jpg)
+
+Через некоторое время я увидел как ospf поплыл и заметил отвал ___FULL->DOWN___ соседа, с которым он был DROTHER/BDR. Ну и понятно, что инициировались перевыборы. В итоге:
+- DR - остался RB
+- BDR - стал RC.
+
+А вот и пакетики LSU/LSR/LSAck подвезли:
+
+На L3:
+
+1. The device multicasts out an OSPF Hello packet on GigabitEthernet0/0.
+2. The device encapsulates the data into an IP packet.
+3. The device sets the TTL on the packet.
+4. The destination IP address is a broadcast or multicast address. The device sets the destination address as the next-hop.
+
+L2:
+
+1. The next-hop IP address is a multicast. The ARP process sets the frame's destination MAC address to a multicast MAC address.
+2. The device encapsulates the PDU into an Ethernet frame.
+
+L1:
+
+1. GigabitEthernet0/0 sends out the frame.
+
+Весь обмен идет MC, но нутрянку OSPF- пакета я не посмотрю в PT, ее надо смотреть в GNS
+
+После смены приоритетов, в соответствии с задланием, картина состояний роутеров стала следующей
+
+![](./pictures/16.jpg)
+
+Выполненно 100%
+
+## 2.4 Modify Single-Area OSPFv2
+
+### Cisco OSPF Cost Metric
+
+еще раз: данный link-state протокол использует поныятие стоимости для вычисления маршрута
