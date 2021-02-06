@@ -208,4 +208,158 @@ L1:
 
 ### Cisco OSPF Cost Metric
 
-еще раз: данный link-state протокол использует поныятие стоимости для вычисления маршрута
+еще раз: данный link-state протокол использует поныятие стоимости для вычисления маршрута. Метрика - отражение накладных расходов при передаче данных по этому линку. OSPF использует ___cost___, чем она ниже - тем лучше.
+
+Вычисляется cost обратно пропорционально BW канала, причем привязывается к некой ыеличине "относительной стоимости", которая до сих пор эквивалентна 100 Мбпс (см. картинку).
+
+![](./pictures/17.jpg)
+
+Поэтому, при расчете на современных цифрах, OSPF не замечает разницы между 1/10 Gbps и выше. Поэтому принято на всех устройствах в OSPF домене ___переопределять___ reference Bandwidth:
+```
+auto-cost reference-bandwidth <Mbps>
+```
+Например для 10 Gigabit Ethernet, ```auto-cost reference-bandwidth 10000```. Все будет пересчитано
+
+![](./pictures/18.jpg)
+
+![](./pictures/19.jpg)
+
+Вурнуть обратно можно командой ```auto-cost reference-bandwidth 100```
+
+## 2.4.3 OSPF Accumulates Costs
+Суммирование стоимости - работа, которую делает OSPF при расчете маршрута. Например, на R1 стоимость до R2=10, а до подсети R2/lo0 = 10+1 = 11/
+
+![](./pictures/20.jpg)
+
+![](./pictures/21.jpg)
+
+Бывают ситуации, когда на стоимость линка нужно повлиять ```ip ospf cost <value>``` :
+- назначить дорогому маршруту метрику хуже
+- взаимодействие оборудования разных производителей
+
+![](./pictures/22.jpg)
+
+аналогичного результата можно добиться используя команду ```bandwidth``` на IF, но только если все R - cisco
+
+## 2.4.7 Hello Packet Intervals
+Hello-пакеты рассылаются MC 224.0.0.5 (на все OSPF роутеры) 1р/10 сек со всех IF, за исключением passive. Кроме этого интервала, есть еще и DEAD: по-умолчанию, если от соседа нет hello-пакета через 4х10 секунд, то он выбрасывается из LSDB и соответственно маршруты через него тоже все экспайрятся и исчезают. Интервалы должны совпадать с обоих сторон линка
+
+В NBMA сетях эти интервалы
+- hello = 30 сек
+- dead = 4x30=120 сек
+
+![](./pictures/23.jpg)
+
+![](./pictures/24.jpg)
+
+поменять интервалы легко, как и вернуть их в исходное состояние:
+```
+[no] ip ospf hello-interval <seconds>
+[no] ip ospf dead-interval <seconds>
+```
+![](./pictures/25.jpg)
+
+___ЛОабораторка 2.4.11___
+
+![](./pictures/26.jpg)
+
+- [pdf](labs/2.4.11-packet-tracer---modify-single-area-ospfv2.pdf)
+- [pka](labs/2.4.11-packet-tracer---modify-single-area-ospfv2.pka)
+
+Задачи:
+- Part 1: Modify OSPF Default Settings
+- Part 2: Verify Connectivity
+
+Итак, в соответствии с заданием, были изменены таймеры на IF между R1, R2, а кроме этого, стоимость s0/0/0 была изменена при помощи команды ```bandwidth 64```, то есть превращена в совсем маленькую.
+
+![](./pictures/27.jpg)
+
+При этом трафик PC1-PC2 ожидаемо пошел через R3
+
+![](./pictures/28.jpg)
+
+И в итоге - 100%, лаба сделана
+
+##2.5.1 Propagate a Default Static Route in OSPFv2
+
+Делается это безобразие с целью дать понять всем роутерам, что default маршрут проходит через тот роутер, который его анонсировал. Анонсировать default route должен тот, который стоит на границе OSPF и не-OSPF области. Называется такой роутер ___ASBR (autonomous system boundary router)___. 
+
+![](./pictures/29.jpg)
+
+На R2, допустим, уже есть статика-восминулевка через lo0. Распространить этот маршрут на все другие роутеры можно командой 
+```
+router ospf 10
+default information originate
+```
+
+Инжектированный дефолтный маршрут при этом в таблице маршрутизации будет обозначен символами ___O*E2___
+
+![](./pictures/30.jpg)
+
+___Лабораторка 2.5.3___
+
+Схема - как в лабораторке выше.
+
+Задачи:
+- Part 1: Propagate a Default Route
+- Part 2: Verify Connectivity
+
+л/р выполняется в 2 команды
+
+```
+R1
+ip route 0.0.0.0 0.0.0.0 s0/1/0
+router ospf 1
+default-information originate
+```
+
+![](./pictures/31.jpg)
+
+После чего с PC1 становится возможным достучаться до 64.100.1.2. Немного похулиганил: изменил bw верхнего IF у R1, трафик пошел через низ
+
+![](./pictures/32.jpg)
+
+
+Аналогично перенаправить трафик можно и при изменении ___cost___ на верхнем IF 
+
+![](./pictures/33.jpg)
+
+## 2.4.1 Verify Single-Area OSPFv2
+
+Команды для проверки OSPF
+```
+show ip interface brief
+show ip route
+show ip ospf neighbor
+show ip protocols
+show ip ospf
+show ip ospf interface <X/Y>
+show ip ospf interface brief
+```
+
+![](./pictures/34.jpg)
+
+- Neighbor ID - This is the router ID of the neighboring router.
+- Pri - This is the OSPFv2 priority of the interface. This value is used in the DR and BDR election.
+- State - This is the OSPFv2 state of the interface. FULL state means that the router and its neighbor have identical OSPFv2 LSDBs. On multiaccess networks, such as Ethernet, two routers that are adjacent may have their states displayed as 2WAY. The dash indicates that no DR or BDR is required because of the network type.
+- Dead Time - This is the amount of time remaining that the router waits to receive an OSPFv2 Hello packet from the neighbor before declaring the neighbor down. This value is reset when the interface receives a Hello packet.
+- Address - This is the IPv4 address of the interface of the neighbor to which this router is directly connected.
+- Interface - This is the interface on which this router has formed adjacency with the neighbor.
+
+![](./pictures/35.jpg)
+
+![](./pictures/36.jpg)
+
+___Лабораторка 2.7.1___
+Начал делать, но времени не хватило
+
+___Лабораторка 2.7.2___
+Не начал делать
+
+
+Ахтунг-вопросы
+
+![](./pictures/37.jpg)
+![](./pictures/38.jpg)
+![](./pictures/39.jpg)
+![](./pictures/40.jpg)
