@@ -21,7 +21,16 @@ ip access-list extended HTTP_ONLY
  permit icmp 172.22.34.96 0.0.0.15 host 172.22.34.62
 ```
 
-повесили их на соответствующие IF, в ближайшем от отправителя месте ( на входе в IF Gi0/0, Gi0/1)  и проверили:
+повесили их на соответствующие IF, в ближайшем от отправителя месте ( на входе в IF Gi0/0, Gi0/1)
+```
+interface GigabitEthernet0/0
+ ip access-group 100 in
+ !
+interface GigabitEthernet0/1
+ ip access-group HTTP_ONLY in
+ ```
+
+  и проверили:
 - трафик icmp сохранился от обоих устройств
 - с PC1 - не работает http на 172.22.34.62
 - c PC2 - не работает ftp на 172.22.34.62
