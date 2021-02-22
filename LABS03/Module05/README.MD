@@ -128,6 +128,104 @@ R3(config-if)#do show ip int gi0/0 | in access
 ___Лаборатока 5.1.9___
 Все просто - вешается 1 ACL на IF глядищий на file-сервер, в направлении OUT.
 
+
+## 5.2.1 Модификация aCL
+Помним: набрав ```no access-list <№ | name>``` - мы тупо удалим его, вот такая херня, малята. Поэтому с маленькими ACL - сначала копируем их в блокнотик, затем прави ручками, затем удаляем acl с железки, затем копируем туда acl  из блокнотика.
+
+Если же ACL больше чем одна строка и грохать его страшно/жалко - тоже сначала копируем весь ACL на бумажку/блокнотик. Затем входим в ACL и правим конкретный ACE
+```
+ip access-list standard 1
+no 10
+10 deny host 192.168.10.10
+```
+Что касается именованных ACL, то  с ними работают аналогично.  
+
+Еще одна фича: по-умолчанию ACE пишутся через 10, так что при желании между ними можно впихнуть еще 9 строк ))
+
+## 5.2.5 Статистика
+Просмотреть ее можно набрав
+```
+show access-lists
+```
+![](./pictures/07.jpg)
+
+Увидимо количество "попаданий" и да возрадуемся.
+
+___Лаборатока 5.2.7___
+
+![](./pictures/08.jpg)
+
+- [pdf](labs/5.2.7-packet-tracer---configure-and-modify-standard-ipv4-acls.pdf)
+- [pka](labs/5.2.7-packet-tracer---configure-and-modify-standard-ipv4-acls.pka)
+
+Задачи:
+- Part 1: Verify Connectivity
+- Part 2: Configure and Verify Standard Numbered and Named ACLs
+   - ACL 1:
+      - allow 192.168.10.0/24, 192.168.20.0/24 to 192.168.30.0/24
+      - deny any
+   - name ACL ___BRANCH-OFFICE-POLICY___:
+      - allow 192.168.40.0/24 -> 192.168.10.0/24
+      - allow only PC-C -> 192.168.10.0/24
+- Part 3: Modify a Standard ACL
+   - найти и модифицировать ACL, который мешает обмену между PC-A и server 209.165.200.254
+
+Итогом становится следующий конфиг:
+R3 - создается ACL1, вешается на IF смотрящий в подсеть 192.168.30.0, в направлении OUT
+```
+access-list 1 remark Allow R1 LANs Access
+access-list 1 permit 192.168.10.0 0.0.0.255
+access-list 1 permit 192.168.20.0 0.0.0.255
+access-list 1 deny any
+...
+interface GigabitEthernet0/0/0 
+ ip access-group 1 out
+```
+R1 - создается ACL BRANCH-OFFICE-POLICY, вешается на IF смотрящий в подсеть 192.168.10.0, в направлении OUT
+```
+ip access-list standard BRANCH-OFFICE-POLICY
+ permit host 192.168.30.3
+ permit 192.168.40.0 0.0.0.255
+ permit 209.165.200.224 0.0.0.31 - добавляется для Part3
+ deny any
+!...
+interface GigabitEthernet0/0/0 
+ ip access-group BRANCH-OFFICE-POLICY out
+ ```
+100%
+
+## 5.3.1 Защита VTY
+Такую защиту я встретил первый раз в одной маленькой компании, которую поддерживал очень грамотный коллега. Схемы, которые он рисовал с трудом на тот момент вмещались в мою голову, но благодаря общению с ним, я реально развился как специалист, спасибо, Юра ))
+
+Итак, ACL может применяться для разрешения трафика на vty только с определенных хостов. Схема такая:
+- создаем список админских хостов
+- вешаем список на vty
+
+Общий конфиг с локальным админом с паролем class
+
+```
+R1(config)# username ADMIN secret class
+R1(config)# ip access-list standard ADMIN-HOST
+R1(config-std-nacl)# remark This ACL secures incoming vty lines
+R1(config-std-nacl)# permit 192.168.10.10
+R1(config-std-nacl)# deny any
+R1(config-std-nacl)# exit
+R1(config)# line vty 0 4
+R1(config-line)# login local
+R1(config-line)# transport input ssh, telnet - telnet - совсем уж плохой тон
+R1(config-line)# access-class ADMIN-HOST in
+R1(config-line)# end
+```
+
+
+## 5.4.1 Extended ACL
+
+___ОЧЕНЬ итересная тема, оставлю на потом___
+
+
+
+
+
 ___Лаборатока 5.4.12___
 
 ![](./pictures/01.jpg)
