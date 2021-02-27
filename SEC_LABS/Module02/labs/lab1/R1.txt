@@ -1,0 +1,35 @@
+IF
+____________________________________
+hostname R1
+no ip domain lookup
+!
+interface FastEthernet0/1
+ description LAN interface
+ ip address 192.168.1.1 255.255.255.0
+no shut
+!
+!
+interface Serial2/0
+ description WAN INTERFACE (TO R2)
+ ip address 10.1.1.1 255.255.255.252
+ encapsulation ppp
+ clock rate 128000
+ bandwidth 128
+no shut
+!
+!
+
+
+OSPF
+____________________________________
+router ospf 1
+ router-id 1.1.1.1
+
+interface FastEthernet0/1
+ ip ospf 1 area 0
+exit
+!
+
+interface Serial2/0
+ ip ospf 1 area 0
+exit
