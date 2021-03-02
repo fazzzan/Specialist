@@ -256,20 +256,25 @@ ___Лабораторка 6___
 Настройки могут быть применены как маршрутизатору, так и к свичу
 
 Задача:
-1. Настройка задержки при вводе пароля (задержка для замедления подбора пароля)
+1. "тормозной логин" - Настройка задержки при вводе пароля (задержка для замедления подбора пароля)
 2. Настройка логгирования успешных/неуспешных попыток входа (фиксация подбора пароля)
-3. Настройка блокировки входа при нескольких неудачных попыток ввода пароля (замедление подбора пароля)
+3. Настройка "режима тишины" (quiet mode) или блокировки входа после нескольких неудачных попыток ввода пароля (замедление подбора пароля)
 4. Настройки ACL для сохранения доступа к хосту во время включения блокировки
 
 ```
-1. 
+Включим таймстамп в логах
+R3#show run | i service
+service timestamps debug datetime msec
+service timestamps log datetime msec
+
+1. тормозной логин
 R1(config)# login delay 10
 2. 
 R1(config)# login on-success log 
 R1(config)# login on-failure log
-3. 
+3. "режим тишины"
 R1(config)# login block-for 300 attempts 3 within 120
-4.
+4. "ACL обхода режима тишины"
 R1(config)# ip access-list standard ACL-LOGIN-QM 
 R1(config-std-nacl)# permit host 192.168.1.101 
 R1(config-std-nacl)# exit 
@@ -277,7 +282,71 @@ R1(config)# login quiet-mode access-class ACL-LOGIN-QM
 R1(config)# exit 
 ```
 
-Проверка ```show login```, ```show access-list``` (будет присутствовать "автоматически созданный acl")
+___Проверка___
+
+```
+show login
+show access-list
+```
+ (будет присутствовать "автоматически созданный acl")
+
+```
+R1(config)#do show login
+     A login delay of 10 seconds is applied.
+     Quiet-Mode access list ACL-LOGIN-QM is applied.
+     All successful login is logged.
+     All failed login is logged.
+
+     Router enabled to watch for login Attacks.
+     If more than 3 login failures occur in 120 seconds or less,
+     logins will be disabled for 100 seconds.
+
+     Router presently in Quiet-Mode.
+     Will remain in Quiet-Mode for 36 seconds.
+     Restricted logins filtered by applied ACL ACL-LOGIN-QM.
+```
+
+```
+R1(config)#do show access-li
+Standard IP access list ACL-LOGIN-QM
+    10 permit 192.168.1.101 (6 matches)
+Extended IP access list sl_def_acl
+    10 deny tcp any any eq telnet log
+    20 deny tcp any any eq www log
+    30 deny tcp any any eq 22 log
+    40 permit tcp any any eq 22 log
+```
+А вот что происходит при уходе роутера в защиту "режим тишины".
+```
+*Mar  2 22:24:28.703: %SEC_LOGIN-1-QUIET_MODE_ON: Still timeleft for watching failures is 0 secs, [user: admin] [Source: 192.168.3.101] [localport: 2001] [Reason: Login Authentication Failed] [ACL: ACL_QM] at 22:24:28 UTC Tue Mar 2 2021
+...
+*Mar  2 22:26:08.703: %SEC_LOGIN-5-QUIET_MODE_OFF: Quiet Mode is OFF, because block period timed out at 22:26:08 UTC Tue Mar 2 2021
+```
+
+![](./pictures/26.jpg)
+
+
+___Лабораторка 7___
+Картинку см. выше
+- [pdf](labs/ЛР7_Изучение_протокола_Syslog.pdf)
+
+Настройки могут быть применены как маршрутизатору, так и к свичу
+
+Задача:
+Настроить пересылку логов на syslog сервер
+```
+R1(config)# logging host 192.168.1.101 
+R1(config)# logging source-interface fa0/1 
+R1(config)# logging on 
+R1(config)# exit 
+```
+
+___Проверка___
+
+```
+R1# show logging 
+```
+
 
 
 
