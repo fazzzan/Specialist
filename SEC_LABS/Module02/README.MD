@@ -440,7 +440,7 @@ net-snmp -  http://www.net-snmp.org/
 PowerSNMP FreeManager  - https://www.dart.com/pages/powersnmp-free-manager 
 
 
-- Включить SNMPv2c
+### Включить SNMPv2c
 ```
 R1(config)# snmp-server contact help@acad.local 
 R1(config)# snmp-server location Main Office 
@@ -453,6 +453,22 @@ show snmp
 show snmp community
 show snmp group
 show snmp view
+```
+
+```
+R1(config)#do sho snmp grou
+...
+groupname: testpassword1                    security model:v1 
+contextname: <no context specified>         storage-type: permanent
+readview : v1default                        writeview: <no writeview specified>        
+notifyview: <no notifyview specified>       
+row status: active
+
+groupname: testpassword1                    security model:v2c 
+contextname: <no context specified>         storage-type: permanent
+readview : v1default                        writeview: <no writeview specified>        
+notifyview: <no notifyview specified>       
+row status: active
 ```
 
 Поработать с железкой по SNMP можно подпрограммами ___snmpget, snmpset___:
@@ -473,8 +489,24 @@ Error in packet.
 Reason: noAccess 
 Failed object: SNMPv2-SMI::snmpV2 
 ```
-При этом  надо помнить, что весь обмен идет нешифрованным, а также на snmp-запросы железка откликнется откуда бы он ни пришел. чтобы защититься - необходим SNMP ACL, в котором будет указано что доступ с community-string только на чтение:
+При этом  надо помнить, что весь обмен идет нешифрованным, а также на snmp-запросы железка откликнется откуда бы он ни пришел. Также злоумышленник может увидеть snmp comunity-string? поэтому использовать v2c для управления - вредно для здоровья. Максимум - для сбора информации.
 
+![](./pictures/28.jpg)
+
+чтобы хоть как-то защититься и не отдавать информацию кому попало (в случае если community скомпрометирована) - необходим SNMP ACL, в котором будет указано что доступ с community-string только на чтение, то есть надо переписать строку ___snmp-server___/ Как видно, тут много параметров:
+
+```
+R1(config)#snmp-server community testpassword1 ? 
+  <1-99>       Std IP accesslist allowing access with this community string
+  <1300-1999>  Expanded IP accesslist allowing access with this community
+               string
+  WORD         Access-list name
+  ipv6         Specify IPv6 Named Access-List
+  ro           Read-only access with this community string
+  rw           Read-write access with this community string
+  view         Restrict this community to a named MIB view
+```
+Итак, сама защита ACL-SNMP
 ```
 R1(config)# ip access-list standard ACL-SNMP 
 R1(config-std-nacl)# permit host 192.168.1.101 
@@ -482,7 +514,8 @@ R1(config-std-nacl)# exit
 R1(config)# snmp-server community testpassword1 ro ACL-SNMP 
 R1(config)# exit 
 ```
-- SNMPv3 - более сложный и защищенный протокол. При его настройке есть дополнительные параметры, которые помогают защитить обмен между SNMP-участниками. примеры будем приводить для R1:
+### Включить SNMPv3
+SNMPv3 - более сложный и защищенный протокол. При его настройке есть дополнительные параметры, которые помогают защитить обмен между SNMP-участниками. Примеры будем приводить для R1 и R3:
 
 отключим старые настройки и добавим READ view, к которому доступ будет только  с ранее настроенного ACL:
 
