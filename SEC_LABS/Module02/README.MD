@@ -576,6 +576,13 @@ show snmp user
 show snmp group 
 ```
 
+Также теперь попробуем подключиться при помощи PowerSNMP Free Manager^ видно что SNMP v3 - более зубастый и обмен уже не так легко подсмотреть
+
+![](./pictures/29.jpg)
+
+![](./pictures/30.jpg)
+
+![](./pictures/31.jpg)
 
 
 
