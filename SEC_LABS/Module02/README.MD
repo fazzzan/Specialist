@@ -434,7 +434,12 @@ R1# show logging
 - порт 162 - пакеты trap
 
 - [pdf](labs/ЛР8_Изучение_протокола_SNMP.pdf)
- 
+
+net-snmp -  http://www.net-snmp.org/ 
+
+PowerSNMP FreeManager  - https://www.dart.com/pages/powersnmp-free-manager 
+
+
 - Включить SNMPv2c
 ```
 R1(config)# snmp-server contact help@acad.local 
@@ -468,7 +473,7 @@ Error in packet.
 Reason: noAccess 
 Failed object: SNMPv2-SMI::snmpV2 
 ```
-При этом  надо помнить, что весь обмен идет нешифрованным, а также на snmp-запросы железка откликнется откуда бы он ни пришел. чтобы защититься - необходим SNMP ACL:
+При этом  надо помнить, что весь обмен идет нешифрованным, а также на snmp-запросы железка откликнется откуда бы он ни пришел. чтобы защититься - необходим SNMP ACL, в котором будет указано что доступ с community-string только на чтение:
 
 ```
 R1(config)# ip access-list standard ACL-SNMP 
@@ -477,13 +482,18 @@ R1(config-std-nacl)# exit
 R1(config)# snmp-server community testpassword1 ro ACL-SNMP 
 R1(config)# exit 
 ```
-- Включить SNMPv3
-На R1
+- SNMPv3 - более сложный и защищенный протокол. При его настройке есть дополнительные параметры, которые помогают защитить обмен между SNMP-участниками. примеры будем приводить для R1:
+
+отключим старые настройки и добавим READ view, к которому доступ будет только  с ранее настроенного ACL:
+
 ```
 no snmp-server community testpassword1 ro ACL-SNMP
 snmp-server view SNMP-RO iso included
 snmp-server group SNMP-G1 v3 priv read SNMP-RO access ACL-SNMP 
 
+```
+Свяжем воедино и проверим:
+```
 snmp-server user SNMP-Admin SNMP-G1 v3 auth sha Authpass priv aes 128 Encrypass
 ...
 show snmp user 
@@ -497,14 +507,12 @@ contact+location:
 R3(config)# snmp-server contact help@acad.local 
 R3(config)# snmp-server location Branch Office 
 ```
-
 SNMP-ACL - только с PC1
 ```
 R3(config)# ip access-list standard ACL-SNMP 
 R3(config-std-nacl)# permit host 192.168.1.101 
 R3(config-std-nacl)# exit 
 ```
-
 view <SNMP-RO> - на все дерево объектов (ветка iso и все её подветки). 
 ```
 R3(config)# snmp-server view SNMP-RO iso included 
@@ -535,9 +543,6 @@ show snmp user
 show snmp group 
 ```
 
-net-snmp -  http://www.net-snmp.org/ 
-
-PowerSNMP FreeManager  - https://www.dart.com/pages/powersnmp-free-manager 
 
 
 
