@@ -20,10 +20,73 @@ R1(config)#ip ssh port 2001 rotary 1
 R1(config)#line vty 0 4
 R1(config-line)#rotary 1
 ```
-Листинг лабораторок
-1. ip-связность
-2. 
+Листинг итога лабораторок
 
+```
+Тут все ясно:
+service password-encryption
+security passwords min-length 10
+enable algorithm-type scrypt secret cisco12345
+username admin algorithm-type scrypt secret cisco12345
+...
+banner motd #Unauthorized access strictly prohibited!#
+...
+line con 0
+login local
+exec-timeout 5
+exit
+...
+line vty 0 4
+login local
+exec-timeout 5
+tran in telnet
+...
+Тут настраиваем ssh:
+ip domain-name acad.local
+crypto key generate rsa general-keys modulus 2048
+ip ssh version 2
+...
+line vty 0 4
+tran in ssh
+end
+...
+Проверка
+show ip ssh 
+show control-plane host open-ports
+...
+Добавим таймстамп в логах
+R3#show run | i service
+service timestamps debug datetime msec
+service timestamps log datetime msec
+...
+Настроим тормозной логин
+R1(config)# login delay 10
+...
+Срать в логи при входе/неудаче
+R1(config)# login on-success log 
+R1(config)# login on-failure log
+...
+"режим тишины"
+R1(config)# login block-for 300 attempts 3 within 120
+...
+ACL обхода "режима тишины"
+R1(config)# ip access-list standard ACL-LOGIN-QM 
+R1(config-std-nacl)# permit host 192.168.1.101 
+R1(config-std-nacl)# exit 
+R1(config)# login quiet-mode access-class ACL-LOGIN-QM 
+R1(config)# exit 
+...
+Проверка
+show login
+show access-list
+...
+Слать логи на syslog
+R1(config)# logging host 192.168.1.101 
+R1(config)# logging source-interface fa0/1 
+R1(config)# logging on 
+R1(config)# exit 
+
+```
 
 # SPECIALIST 20210227
 до 24.02.2020 года был отдельный курс CCNA SEC - IINS (implementing network security).Теперь такой сертификации нет, а курс размазан по модулям других курсов.
@@ -364,6 +427,117 @@ R1# show logging
 ![](./pictures/27.jpg)
 
 
+## ___Лабораторка 8___
+
+Картинку см. выше. Надо собирать данные с узлов через SNMP UDP:
+- порт 161 - пакеты get и set
+- порт 162 - пакеты trap
+
+- [pdf](labs/ЛР8_Изучение_протокола_SNMP.pdf)
+ 
+- Включить SNMPv2c
+```
+R1(config)# snmp-server contact help@acad.local 
+R1(config)# snmp-server location Main Office 
+R1(config)# snmp-server community testpassword1 ro 
+R1(config)# exit 
+...
+show control-plane host open-ports 
+...
+show snmp 
+show snmp community
+show snmp group
+show snmp view
+```
+
+Поработать с железкой по SNMP можно подпрограммами ___snmpget, snmpset___:
+- ___snmpget___ – программа отправки get-запросов SNMP; 
+   - -v 2c – использовать версию 2c; 
+   - -c testpassword1 – использовать строку сообщества testpassword1; 
+   - 192.168.1.1 – адрес устройства; 
+   - sysName.0 – строковое обозначение переменной. 
+```
+C:\Users\Student1> snmpget -v 2c -c testpassword1 192.168.1.1 sysName.0 
+SNMPv2-MIB::sysName.0 = STRING: R1.acad.local 
+```
+- ___snmpset___ - программа отправки set-запросов SNMP
+  - sysName.0 – строковое обозначение переменной. 
+```
+C:\Users\Student1>snmpset -v 2c -c testpassword1 192.168.1.1 s sysName.0 R1new 
+Error in packet. 
+Reason: noAccess 
+Failed object: SNMPv2-SMI::snmpV2 
+```
+При этом  надо помнить, что весь обмен идет нешифрованным, а также на snmp-запросы железка откликнется откуда бы он ни пришел. чтобы защититься - необходим SNMP ACL:
+
+```
+R1(config)# ip access-list standard ACL-SNMP 
+R1(config-std-nacl)# permit host 192.168.1.101 
+R1(config-std-nacl)# exit 
+R1(config)# snmp-server community testpassword1 ro ACL-SNMP 
+R1(config)# exit 
+```
+- Включить SNMPv3
+На R1
+```
+no snmp-server community testpassword1 ro ACL-SNMP
+snmp-server view SNMP-RO iso included
+snmp-server group SNMP-G1 v3 priv read SNMP-RO access ACL-SNMP 
+
+snmp-server user SNMP-Admin SNMP-G1 v3 auth sha Authpass priv aes 128 Encrypass
+...
+show snmp user 
+show snmp group
+show snmp view
+```
+
+На R3
+```
+contact+location:
+R3(config)# snmp-server contact help@acad.local 
+R3(config)# snmp-server location Branch Office 
+```
+
+SNMP-ACL - только с PC1
+```
+R3(config)# ip access-list standard ACL-SNMP 
+R3(config-std-nacl)# permit host 192.168.1.101 
+R3(config-std-nacl)# exit 
+```
+
+view <SNMP-RO> - на все дерево объектов (ветка iso и все её подветки). 
+```
+R3(config)# snmp-server view SNMP-RO iso included 
+```
+
+Теперь свяжем все воедино: 
+- пользователи группы SNMP-G1 будут аутентифицироватося по имени/паролю. 
+- Обмен SNMPv3 (шифруется и проходит проверку целостности.
+- Представление SNMP-RO - read («только чтение»)
+- подключение только с узла PC1. 
+
+```
+R3(config)# snmp-server group SNMP-G1 v3 priv read SNMP-RO access 
+ACL-SNMP 
+```
+
+Добавим юзера SNMP-Admin в группу SNMP-G1 со следующими параметрами аутентификации и шифрования: 
+
+```
+R3(config)# snmp-server user SNMP-Admin SNMP-G1 v3 auth sha 
+Authpass priv aes 128 Encrypass 
+R3(config)# end 
+```
+
+Проверка: 
+```
+show snmp user 
+show snmp group 
+```
+
+net-snmp -  http://www.net-snmp.org/ 
+
+PowerSNMP FreeManager  - https://www.dart.com/pages/powersnmp-free-manager 
 
 
 
