@@ -692,6 +692,41 @@ R1(config-router)#do show ip ospf int fa0/1 | in No
 
 ![](./pictures/37.jpg)
 
+Настройка аутентификации
+```
+R1(config)# int s2/0 
+R1(config-if)# ip ospf message-digest-key 1 md5 <ospfpass>
+R1(config-if)# ip ospf authentication message-digest 
+ 
+R1(config-if)# do show ip ospf int s2/0 
+
+R2# conf t 
+R2(config)# int s2/0 
+R2(config-if)# ip ospf message-digest-key 1 md5 ospfpass 
+R2(config-if)# ip ospf authentication message-digest  
+R2(config-if)# exit 
+R2(config)# int s2/1 
+R2(config-if)# ip ospf message-digest-key 1 md5 ospfpass 
+R2(config-if)# ip ospf authentication message-digest 
+R2(config-if)# end 
+ 
+
+R3# conf t 
+R3(config)# router ospf 1 
+R3(config-router)# passive-interface default 
+R3(config-router)# no passive-interface s2/1 
+R3(config-router)# exit 
+R3(config)# int s2/1 
+R3(config-if)# ip ospf message-digest-key 1 md5 ospfpass 
+R3(config-if)# ip ospf authentication message-digest 
+R3(config-if)# end  
+
+R3# show ip proto
+R3# show ip ospf int s2/1 
+```
+Запутался и на R2 некорректно назначил ___ospfpass___. Перепрописл чисто интуитивно
+
+![](./pictures/38.jpg)
 
 
 
