@@ -213,8 +213,171 @@ freeRADIUS, https://freeradius.org/
 
 ![](./pictures/31.jpg)
 
-
-
-___Доделать на R3___
+Все получилось
 
 ## Межсетевые экраны, ZBPF
+
+Типы межсетевых экранов
+- Packert filtering (проверяет каждый пакет). Проверяет как L3, так и L4, так и типы (как у icmp). Минусы 
+   - производительность: CPU обрабатывает каждый пакет (например передается громадный файл, что приведет к загрузке CPU)-
+   - обратный трафик не разрешен
+![](./pictures/32.jpg)
+
+- Statefull firewall (проверяет только 1-й пакет из потока). Работает на L3, 4, 5. На основании проверки 1-го пакета создается записьв таблице состояния. Плюсы:
+   - следующие пакеты не проверяются, а обрабатываются на основании записи в таблице состояния
+   - разрешен обратный трафик
+
+![](./pictures/33.jpg)
+
+- Application gateway firewall (работает на L3 -5, L7). Из коробки мог лезть в определенные протоколы (http и т.д.)
+
+- NAT Firewall: L3, 4? с о
+
+![](./pictures/35.jpg)
+
+На CCNA уже смотрели ___NGFW [next-generation firewall]___, которые уже работают с тысячами приложений.
+
+AVS - application visibility control
+
+![](./pictures/36.jpg)
+
+NGFW включают ограничения на основе
+- identity FW (группы, юзеры AD) - на основании информации от DC
+- делают NAT, VPN, DPI, IPS/IDS
+
+Линейка NGFW (маршрутизатор не может работать FW):
+- Cisco ASA 5500-Ч with FirePower services
+- Cisco firepower (новая линейка)
+
+На R можно только включить ZBPF/ZPF - это вариант для небольших офисов/бранчей или на случай, если подключение не Ethernet, а в бранче ет возможности завернуть трафик через центральный офис
+
+
+![](./pictures/37.jpg)
+
+Делим сети на зоны (скажем чатсь VLAN - в одной зоне, часть VLAN - в другой зоне). Правила для зон будет распространяться на IF, которые входят в данные зоны.
+
+Выгоды ZBPF/ZPF
+- не привязан к ACL
+- при включении ZPF - правила меняются: что не разрешено - все дропается
+- настройка на основании C3PL
+- Дейстивия ZPF:
+   - Inspect (1-й пакет инспектируется: проверяется по правилам, все остальные - на основании результата для 1-го пакета, разрешается обратный трафик )
+   - Drop (аналог deny acl)
+   - Pass (аналог permit acl)
+
+![](./pictures/38.jpg)
+
+- SELF зона (трафик к/от самого маршрутизатора)
+   - к ней относятся ip-адреса маршрутизатора
+
+![](./pictures/39.jpg)
+
+ZPF нельзя включить наполовину. Как только 1 IF в зону, то начинаюто работать правила (RULES for transit traffic - см. выше)
+
+
+При настройке ЯЗА
+1. Определяем зоны
+
+![](./pictures/40.jpg)
+
+2. создаем class-map, для выбора интересного/определенного трафика
+   - match-any (срабатывает что-либо из условий = ИЛИ)
+   - match-all (все условия срабатывают = И)
+   - class-map-name
+   - попадает в саму cladss-map
+      - match accers-group
+      - match poroto
+      - match class-map (матрешка)
+
+![](./pictures/41.jpg)
+
+![](./pictures/42.jpg)
+
+3. Карта политик Policy-map: что делаем с выбранным интересным трафиком
+   - создаем полиси
+      - задаем тип
+         - действие (drop, pass, inspect): drop - default
+
+4. Создаем пары зон: тут все увязываем
+
+![](./pictures/44.jpg)
+
+Получается модульная структура
+
+![](./pictures/45.jpg)
+
+5. Вносим IF в зоны: IF только в 1 зоне
+
+![](./pictures/46.jpg)
+
+
+## ___Лабораторка 16___
+
+Картинка 
+![](./pictures/47.jpg)
+
+- [pdf](labs/ЛР16-Настройка_Zone-based_Policy_Firewall.pdf)
+
+Задача: внедрить ZPF R3:
+- 192.168.3.0/24 - superusers (INSIDE) - permit весь OUTSIDE трафик
+- 192,168,10,0/24 - конференц-зал, разрешен только http/https/DNS на OUTSIDE трафик
+- взаимодействие между INSIDE и OUTSIDE - запрещен
+- из OUTSIDE - разрешить возвратный трафик
+
+1. 3 зоны 
+   - INSIDE
+   - CONFROOM
+   - OUTSIDE
+2. 2 class-map 
+   - для INSIDE
+   - для CONFROOM
+3. 2 policy-map типа inspect
+   - для INSIDE
+   - для CONFROOM
+4. 2 zone-pair
+   - INSIDE-OUTSIDE
+   - CONFROOM-OUTSIDE
+
+![](./pictures/48.jpg)
+
+На R3
+1. 3 зоны 
+   - INSIDE
+   ```
+   zone-security ZONE_INSIDE
+   ```
+   - CONFROOM
+   ```
+   zone-security ZONE_CONFROOM
+   ```
+   - OUTSIDE
+   ```
+   zone-sec ZONE_OUTSIDE
+   ```
+___do show zone security___
+
+2. 2 class-map 
+   - для INSIDE
+   ```
+   class-map typ in match-any CM_INSIDE_PROTOCOLS
+   match protocol tcp
+   match protocol udp
+   match proto icmp
+   ```
+   - для CONFROOM
+   ```
+   ```
+3. 2 policy-map типа inspect
+   - для INSIDE
+   ```
+   ```
+   - для CONFROOM
+   ```
+   ```
+4. 2 zone-pair
+   - INSIDE-OUTSIDE
+   ```
+   ```
+   - CONFROOM-OUTSIDE
+   ```
+   ```
