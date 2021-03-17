@@ -1,16 +1,40 @@
 # Specialist 20201226
-В результате развития, инженеры пришли к необходимости построения физически отказоустойчевых подключений к SW более высокого уровня. 
-Свичи обмениваются ___BPDU___, для 
-   - I этап: выбора корня ___root bridge на основании BID: идентификатор SW. Некоторый составной ID PRI&MAC - 
-     - MAC - можно посмотреть 
+В результате развития, инженеры пришли к необходимости построения физически отказоустойчевых подключений к SW более высокого уровня и между собой. 
+STP реализован при помощи ___BPDU___ [bridge protocol data unit], которыми  обмениваются Свичи: 
+- I этап: выбора корня ___root bridge___ на основании BID: идентификатор SW. Это некоторый составной ___ID=PRI & MAC___ 
+     - MAC - можно посмотреть (min из вывода ```show interfaces | in Giga|address```)
+     - приоритет [PRI] = 16bit (Default 32768)
 ![](./pictures/06.jpg)   
-   - приоритет PRI 16bit (Default 32768)
+
+```
+Switch#show interfaces | in Giga|address
+!
+GigabitEthernet0/0 is up, line protocol is up (connected) 
+  Hardware is iGbE, address is 0c09.c5ce.5300 (bia 0c09.c5ce.5300)
+...
+  Hardware is iGbE, address is 0c09.c5ce.530f (bia 0c09.c5ce.530f)
+!
+show spanning-tree | sec Bridge ID
+!
+Switch#show spanning-tree | sec Bridge ID
+  Bridge ID  Priority    32769  (priority 32768 sys-id-ext 1)
+             Address     0c09.c5ce.5300
+             Hello Time   2 sec  Max Age 20 sec  Forward Delay 15 sec
+             Aging Time  300 sec
+```
+   
 При выборе ROOT - побеждает SW с ___min BID___
+
 ![](./pictures/07.jpg)   
-   - II этап: После выбора ROOT - начинают выбирать ROOT Port на каждом SW, на основании ___"стоимости"___ линков до ROOT Bridge и в BPDU рассылает информацию до ROOT, все последуюшие SW рассылают информацию с учетом стоимости аплинков до ROOT'а
+
+- II этап: После выбора ROOT - начинают выбирать ROOT Port [RP] на каждом SW, на основании ___стоимости___ линков до ROOT Bridge. В BPDU рассылает информацию до ROOT, все последуюшие SW рассылают информацию с учетом пришедшей стоимости аплинков до ROOT'а
+
 ![](./pictures/07.jpg)
+
 ![](./pictures/08.jpg)
+
 ![](./pictures/09.jpg)
+
    - III этап: После выбора RP определяем роли остальных портов:
      - на ROOT - все порты DP, FWD
      - На конкурирующих SW в сторону ROOT смотрит RP (FWD), осталось выяснить какой порт на каком SW класть в DOWN. Если стоимости одинаковы, то решаем по стоимости BID посылающего. У кого BID меньше, тот побеждает и оставляет свой порт вклю DP/FWD, второй - смиряется и гасит свой порт ___NDP/BLK___. При этом SW не отправляет через этот порт никаких пакетов, кроме BPDU.
