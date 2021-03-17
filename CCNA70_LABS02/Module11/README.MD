@@ -89,3 +89,11 @@ GARP - нужен для ускорения работы ARP, поэтому у�
 ___Таким образом все типа защит на access-SW___:
 
 ![](./pictures/08.jpg)
+
+
+___Прочитать___:
+
+VLAN hopping: https://unlix.ru/vlan-hopping-%d0%bf%d0%be-%d1%83%d0%bc%d0%be%d0%bb%d1%87%d0%b0%d0%bd%d0%b8%d1%8e/
+
+Защищаемся с помощью Port Security:
+https://unlix.ru/%d0%b7%d0%b0%d1%89%d0%b8%d1%89%d0%b0%d0%b5%d0%bc%d1%81%d1%8f-%d1%81-%d0%bf%d0%be%d0%bc%d0%be%d1%89%d1%8c%d1%8e-port-security/

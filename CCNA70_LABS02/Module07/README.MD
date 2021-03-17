@@ -254,3 +254,8 @@ ___Лаб 7.4.2___
 ![](./pictures/17.jpg)
 
 - [pkt](labs/7.4.2.lab.pkt)
+
+___Почитать___:
+
+Защита DHCP в сети
+https://unlix.ru/%d0%b7%d0%b0%d1%89%d0%b8%d1%82%d0%b0-dhcp-%d0%b2-%d1%81%d0%b5%d1%82%d0%b8/#more-794
