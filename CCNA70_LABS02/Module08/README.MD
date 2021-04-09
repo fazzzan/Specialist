@@ -291,3 +291,30 @@ Router(config-if)# ipv6 dhcp relay destination ipv6-address [interface-type inte
 - ``````
 
 ![](./pictures/25.jpg)
+
+# Лабораторка
+
+___Лаб 7.4.2___
+
+- [pdf](labs/8.5.1-lab---configure-dhcpv6.pdf)
+
+![](./pictures/14.jpg)
+
+Задачи:
+1. Разбить подсетки
+2. Произвести базовую настройку роутеров
+3. На R1 настроить сабы, включить inter vlan routing
+4. Произвести базовую настройку SW
+5. Настроить S1: vlan'ы, SVI, аплинк - trunk->native,  Access->clients, все остальные в Parking_LOT
+6. Настроить S2: vlan1, SVI, все порты кроме аплинк, access - выключить
+7. На R1 настроить исключения, пулы DHCP
+8. Получить ip на PC1
+9. На R2 настроить ip-helper на inside IF
+10. Получить ip на PC2
+11. Проверить связность PC1-PC2
+
+Конфиги:
+- [R1](./labs/7.4.2_r1.cfg)
+- [R2](./labs/7.4.2_r2.cfg)
+- [S1](./labs/7.4.2_S1.cfg)
+- [S2](./labs/7.4.2_S2.cfg)
