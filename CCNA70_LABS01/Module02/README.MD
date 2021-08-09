@@ -8,13 +8,14 @@ hostname <Name>
 enable secret <class>
 line con 0
 password <cisco>
+login
 exit
 line vty 0 15
 password <cisco>
 login
 exit
 banner motd #Restricted access#
-service password encryption
+service password-encryption
 int vlan 1
 ip address <IP_MASK>
 no shut
