@@ -1,0 +1,50 @@
+### Part 1: Perform a Basic Configuration on S1 and S2
+configure terminal
+hostname S1
+line con 0
+password cisco
+exit
+enable secret class
+
+banner motd #Authorized access only. Violators will be prosecuted to the full extent of the law.#
+
+exit
+copy run start
+
+### Part 2: Configure the PCs
+
+### Part 3: Configure the Switch Management Interface: Use the following commands to configure S1 with an IP address.
+
+configure terminal
+interface vlan 1
+ip address 192.168.1.254 255.255.255.0
+no shutdown
+exit
+copy run start
+
+### Проверка 
+ping 192.168.1.253
+ping 192.168.1.254
+ping 192.168.1.1
+ping 192.168.1.2
+
+### Рекомендуемый конфиг свича
+configure terminal
+no ip domain lookup
+hostname <Name>
+enable secret <class>
+line con 0
+password <cisco>
+login
+exit
+line vty 0 15
+password <cisco>
+login
+exit
+banner motd <#Restricted access#>
+service password-encryption
+int vlan 1
+ip address <IP MASK>
+no shut
+exit
+copy run start

@@ -1,0 +1,52 @@
+### Part 1: Verify the Default Switch Configuration
+show running-config
+
+### Part 2: Configure a Basic Switch Configuration
+hostname S1
+line console 0
+password letmein
+login
+exit
+
+enable
+configure terminal
+enable password c1$c0
+exit
+
+config t
+enable secret itsasecret
+exit
+
+config t
+service password-encryption
+exit
+
+### Part 3: Configure a MOTD Banner
+config t
+banner motd "This is a secure system. Authorized Access Only!"
+exit
+
+### Part 4: Save Configuration Files to NVRAM
+
+copy running-config startup-config
+
+
+### Рекомендуемый конфиг свича
+configure terminal
+no ip domain lookup
+hostname <Name>
+enable secret <class>
+line con 0
+password <cisco>
+login
+exit
+line vty 0 15
+password <cisco>
+login
+exit
+banner motd #Restricted access#
+service password-encryption
+int vlan 1
+ip address <IP_MASK>
+no shut
+exit

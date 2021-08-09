@@ -1,0 +1,35 @@
+### Part 5: Configure S2
+
+configure terminal
+hostname S2
+line console 0
+password letmein
+login
+exit
+enable password c1$c0
+enable secret itsasecret
+service password-encryption
+banner motd "This is a secure system. Authorized Access Only!"
+exit
+
+copy running-config startup-config
+
+### Рекомендуемый конфиг свича
+configure terminal
+no ip domain lookup
+hostname <Name>
+enable secret <class>
+line con 0
+password <cisco>
+login
+exit
+line vty 0 15
+password <cisco>
+login
+exit
+banner motd #Restricted access#
+service password-encryption
+int vlan 1
+ip address <IP_MASK>
+no shut
+exit
