@@ -546,7 +546,7 @@ R3(config)# ip access-list standard ACL-SNMP
 R3(config-std-nacl)# permit host 192.168.1.101 
 R3(config-std-nacl)# exit 
 ```
-view <SNMP-RO> - на все дерево объектов (ветка iso и все её подветки). 
+``view SNMP-RO`` - на все дерево объектов (ветка iso и все её подветки). 
 ```
 R3(config)# snmp-server view SNMP-RO iso included 
 ```
